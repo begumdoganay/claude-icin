@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Receipt - LUVY GO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 500: '#a855f7', 600: '#9333ea' },
+                        secondary: { 500: '#f59e0b' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    
+    <header class="bg-white border-b sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-orange-500 flex items-center justify-center text-white text-xl font-bold">L</div>
+                <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-orange-600 bg-clip-text text-transparent">LUVY GO</span>
+            </div>
+            
+            <nav class="flex items-center gap-6">
+                <a href="dashboard.html" class="text-gray-600 hover:text-purple-600">Dashboard</a>
+                <a href="upload.html" class="text-purple-600 font-semibold">Upload Receipt</a>
+                <button id="logout-btn" class="text-red-600 hover:text-red-700 font-medium">Logout</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 max-w-2xl">
+        
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Upload Receipt ??</h1>
+            <p class="text-gray-600">Upload your receipt and earn LUVY tokens!</p>
+        </div>
+
+        <div id="success-message" class="hidden bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+            <p class="font-semibold">? Success!</p>
+            <p class="text-sm" id="success-text"></p>
+        </div>
+
+        <div id="error-message" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            <p class="font-semibold">? Error</p>
+            <p class="text-sm" id="error-text"></p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            
+            <form id="upload-form" class="space-y-6">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Receipt Image</label>
+                    <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-500 transition cursor-pointer">
+                        <input type="file" id="receipt-image" accept="image/*" class="hidden">
+                        <div id="drop-zone-content">
+                            <div class="text-6xl mb-4">??</div>
+                            <p class="text-gray-600 mb-2">Click to upload or drag and drop</p>
+                            <p class="text-sm text-gray-400">PNG, JPG up to 10MB</p>
+                        </div>
+                        <div id="image-preview" class="hidden">
+                            <img id="preview-img" class="max-h-64 mx-auto rounded-lg shadow-md">
+                            <button type="button" id="remove-image" class="mt-4 text-red-600 hover:text-red-700 text-sm font-medium">Remove Image</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="merchant-name" class="block text-sm font-medium text-gray-700 mb-2">Merchant Name</label>
+                        <input type="text" id="merchant-name" placeholder="e.g. Starbucks" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none">
+                    </div>
+                    
+                    <div>
+                        <label for="total-amount" class="block text-sm font-medium text-gray-700 mb-2">Total Amount (?)</label>
+                        <input type="number" id="total-amount" step="0.01" placeholder="0.00" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="receipt-date" class="block text-sm font-medium text-gray-700 mb-2">Receipt Date</label>
+                    <input type="date" id="receipt-date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none">
+                </div>
+
+                <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold py-4 rounded-lg transition shadow-lg hover:shadow-xl text-lg">
+                    Upload & Earn LUVY ??
+                </button>
+
+                <div class="bg-purple-50 border border-purple-200 px-4 py-3 rounded-lg">
+                    <p class="text-sm text-purple-800">?? <strong>Tip:</strong> You'll earn LUVY tokens based on your receipt amount. The more you spend, the more you earn!</p>
+                </div>
+            </form>
+        </div>
+
+    </main>
+
+    <script>
+        console.log('?? Script baþladý');
+        
+        const API_URL = 'http://localhost:3002/api';
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        });
+
+        // Element referanslarý
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('receipt-image');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImg = document.getElementById('preview-img');
+        const dropZoneContent = document.getElementById('drop-zone-content');
+        const form = document.getElementById('upload-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const successDiv = document.getElementById('success-message');
+        const errorDiv = document.getElementById('error-message');
+        
+        console.log('?? Elementler yüklendi:', { dropZone, fileInput, form });
+        
+        // Drop zone'a týklama
+        dropZone.addEventListener('click', function(e) {
+            console.log('??? Drop zone týklandý');
+            if (e.target.id !== 'remove-image') {
+                fileInput.click();
+            }
+        });
+        
+        // Dosya seçildiðinde
+        fileInput.addEventListener('change', function(e) {
+            console.log('?? Dosya seçildi:', e.target.files[0]);
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    dropZoneContent.classList.add('hidden');
+                    imagePreview.classList.remove('hidden');
+                    console.log('? Önizleme gösteriliyor');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Remove image
+        document.getElementById('remove-image').addEventListener('click', function(e) {
+            e.stopPropagation();
+            console.log('??? Fotoðraf kaldýrýldý');
+            fileInput.value = '';
+            dropZoneContent.classList.remove('hidden');
+            imagePreview.classList.add('hidden');
+        });
+
+        // Drag & Drop
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.classList.add('border-purple-500');
+        });
+        
+        dropZone.addEventListener('dragleave', function() {
+            dropZone.classList.remove('border-purple-500');
+        });
+        
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('border-purple-500');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                fileInput.files = e.dataTransfer.files;
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+        });
+
+        // Form submit - EN ÖNEMLÝ KISIM
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('?? Form submit edildi');
+            
+            successDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            
+            // ?? KRÝTÝK KONTROL
+            if (!fileInput.files || fileInput.files.length === 0) {
+                console.log('? Dosya seçilmedi!');
+                document.getElementById('error-text').textContent = 'Lütfen bir fiþ fotoðrafý seçin!';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            console.log('? Dosya var, yükleniyor...');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">?</span> Uploading...';
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            
+            const formData = new FormData();
+            formData.append('receipt', fileInput.files[0]);
+            formData.append('userId', user.id);
+            formData.append('merchantId', '00000000-0000-0000-0000-000000000001');
+            formData.append('totalAmount', document.getElementById('total-amount').value);
+            formData.append('receiptDate', document.getElementById('receipt-date').value);
+            
+            console.log('?? API isteði gönderiliyor...');
+            
+            try {
+                const response = await fetch(API_URL + '/receipts/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                console.log('?? API yanýtý:', data);
+                
+                if (data.success) {
+                    document.getElementById('success-text').textContent = 
+                        `Receipt uploaded successfully! You earned ${data.data.luvyEarned} LUVY tokens! ??`;
+                    successDiv.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    throw new Error(data.error || 'Upload failed');
+                }
+                
+            } catch (error) {
+                console.error('? Hata:', error);
+                document.getElementById('error-text').textContent = error.message;
+                errorDiv.classList.remove('hidden');
+                
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Upload & Earn LUVY ??';
+            }
+        });
+        
+        // Bugünün tarihini set et
+        document.getElementById('receipt-date').valueAsDate = new Date();
+        
+        console.log('? Tüm event listener\'lar kuruldu');
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

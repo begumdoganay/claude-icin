@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | LUVY</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gray-50:#fafafa;--gray-100:#f5f5f5;--gray-200:#e5e5e5;--gray-300:#d4d4d4;
+  --gray-400:#a3a3a3;--gray-500:#737373;--gray-600:#525252;--gray-700:#404040;
+  --gray-800:#262626;--gray-900:#171717;
+  --purple-50:#faf5ff;--purple-500:#8b5cf6;--purple-600:#7c3aed;
+  --green-50:#f0fdf4;--green-500:#10b981;--green-600:#059669;
+  --orange-50:#fff7ed;--orange-500:#f59e0b;
+  --blue-50:#eff6ff;--blue-500:#3b82f6;--blue-600:#2563eb;
+  --red-50:#fef2f2;--red-500:#ef4444;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--gray-50);color:var(--gray-900);-webkit-font-smoothing:antialiased}
+
+/* Header */
+header{background:#fff;border-bottom:1px solid var(--gray-200);position:sticky;top:0;z-index:100}
+.header-inner{max-width:1440px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{width:32px;height:32px;border-radius:var(--radius);background:linear-gradient(135deg,var(--purple-600),var(--purple-500));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px}
+.logo-text{font-size:16px;font-weight:700;color:var(--gray-900);letter-spacing:-.01em}
+.nav{display:flex;gap:1px}
+.nav-link{color:var(--gray-600);text-decoration:none;padding:8px 14px;border-radius:6px;font-size:14px;font-weight:500;transition:.15s}
+.nav-link:hover{color:var(--gray-900);background:var(--gray-100)}
+.nav-link.active{color:var(--gray-900);background:var(--gray-100)}
+.header-right{display:flex;align-items:center;gap:12px}
+.balance-badge{display:flex;align-items:center;gap:6px;background:var(--purple-50);color:var(--purple-600);padding:6px 12px;border-radius:var(--radius);font-size:13px;font-weight:600;border:1px solid rgba(139,92,246,.15)}
+.balance-live{display:inline-block;width:6px;height:6px;background:var(--green-500);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple-600),var(--purple-500));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+
+/* Main */
+main{max-width:1440px;margin:0 auto;padding:24px}
+
+/* Hero Stats */
+.hero{background:linear-gradient(135deg,#111827 0%,#1f2937 100%);border-radius:var(--radius-lg);padding:32px;margin-bottom:24px;color:#fff;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;right:0;width:400px;height:400px;background:radial-gradient(circle,rgba(139,92,246,.15),transparent);pointer-events:none}
+.hero-content{position:relative;z-index:1;display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:32px}
+.hero-main .label{font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;font-weight:500}
+.hero-main .value{font-size:48px;font-weight:700;margin-bottom:4px;letter-spacing:-.02em}
+.hero-main .change{font-size:14px;color:var(--green-500);font-weight:500}
+.hero-stat{border-left:1px solid rgba(255,255,255,.1);padding-left:24px}
+.hero-stat .label{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.hero-stat .value{font-size:28px;font-weight:700;margin-bottom:2px}
+.hero-stat .sub{font-size:13px;color:rgba(255,255,255,.6)}
+
+/* Quick Stats */
+.quick-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:20px;transition:.15s}
+.stat-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.05);transform:translateY(-2px)}
+.stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.stat-icon{width:40px;height:40px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:18px}
+.stat-icon.purple{background:var(--purple-50);color:var(--purple-600)}
+.stat-icon.blue{background:var(--blue-50);color:var(--blue-600)}
+.stat-icon.green{background:var(--green-50);color:var(--green-600)}
+.stat-icon.orange{background:var(--orange-50);color:var(--orange-500)}
+.stat-trend{font-size:12px;font-weight:600;padding:4px 8px;border-radius:99px}
+.stat-trend.up{background:var(--green-50);color:var(--green-600)}
+.stat-trend.down{background:var(--red-50);color:var(--red-500)}
+.stat-value{font-size:32px;font-weight:700;color:var(--gray-900);margin-bottom:4px;letter-spacing:-.02em}
+.stat-label{font-size:13px;color:var(--gray-500);font-weight:500}
+
+/* Charts Row */
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px}
+.card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:24px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.card-title{font-size:16px;font-weight:600;color:var(--gray-900)}
+.card-subtitle{font-size:13px;color:var(--gray-500);margin-top:2px}
+.chart-controls{display:flex;gap:6px}
+.chart-btn{padding:6px 12px;border:1px solid var(--gray-300);background:#fff;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--gray-600);transition:.15s}
+.chart-btn:hover{border-color:var(--gray-400);color:var(--gray-900)}
+.chart-btn.active{background:var(--gray-900);color:#fff;border-color:var(--gray-900)}
+
+/* Portfolio Breakdown */
+.portfolio-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray-100)}
+.portfolio-item:last-child{border-bottom:none}
+.portfolio-left{display:flex;align-items:center;gap:12px}
+.portfolio-color{width:10px;height:10px;border-radius:2px}
+.portfolio-name{font-size:14px;font-weight:500;color:var(--gray-900)}
+.portfolio-pct{font-size:12px;color:var(--gray-500);margin-top:2px}
+.portfolio-amount{font-size:14px;font-weight:600;color:var(--gray-900);text-align:right}
+.portfolio-tokens{font-size:12px;color:var(--gray-500);margin-top:2px}
+
+/* Transactions Table */
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.search-box{position:relative;width:280px}
+.search-box input{width:100%;padding:8px 12px 8px 36px;border:1px solid var(--gray-300);border-radius:var(--radius);font-size:13px;outline:none;transition:.15s}
+.search-box input:focus{border-color:var(--purple-500);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray-400)}
+.table-actions{display:flex;gap:8px}
+.btn{padding:8px 14px;border:1px solid var(--gray-300);background:#fff;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--gray-50);border-color:var(--gray-400)}
+.btn-primary{background:var(--gray-900);color:#fff;border-color:var(--gray-900)}
+.btn-primary:hover{background:var(--gray-800)}
+
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;padding:12px 16px;font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-200)}
+tbody td{padding:16px;font-size:14px;color:var(--gray-700);border-bottom:1px solid var(--gray-100)}
+tbody tr:hover{background:var(--gray-50)}
+.merchant-cell{display:flex;align-items:center;gap:12px}
+.merchant-icon{width:40px;height:40px;border-radius:var(--radius);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px}
+.merchant-info .name{font-weight:500;color:var(--gray-900);margin-bottom:2px}
+.merchant-info .category{font-size:12px;color:var(--gray-500)}
+.amount{font-weight:600;color:var(--gray-900)}
+.status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500}
+.status.completed{background:var(--green-50);color:var(--green-600)}
+.status.pending{background:var(--orange-50);color:var(--orange-500)}
+.tokens-badge{display:inline-flex;align-items:center;gap:4px;background:var(--purple-50);color:var(--purple-600);padding:5px 10px;border-radius:6px;font-size:13px;font-weight:600}
+
+/* Real-time indicator */
+.live-indicator{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--green-600);font-weight:500;background:var(--green-50);padding:4px 10px;border-radius:99px;margin-left:8px}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{opacity:0;animation:fadeIn .4s cubic-bezier(.4,0,.2,1) forwards}
+.d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}.d4{animation-delay:.2s}
+
+@media(max-width:1200px){.hero-content{grid-template-columns:1fr}.charts-row{grid-template-columns:1fr}.quick-stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="dashboard.html" class="logo">
+      <div class="logo-mark">L</div>
+      <span class="logo-text">LUVY</span>
+    </a>
+    <nav class="nav">
+      <a href="dashboard.html" class="nav-link active">Dashboard</a>
+      <a href="transactions.html" class="nav-link">Transactions</a>
+      <a href="analytics.html" class="nav-link">Analytics</a>
+      <a href="settings.html" class="nav-link">Settings</a>
+    </nav>
+    <div class="header-right">
+      <div class="balance-badge">
+        <span class="balance-live"></span>
+        <span>💎</span>
+        <span id="navBalance">0</span>
+      </div>
+      <div class="avatar" id="navAvatar" onclick="handleLogout()">B</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <div class="hero fade-in d1">
+    <div class="hero-content">
+      <div class="hero-main">
+        <div class="label">Total Portfolio Value</div>
+        <div class="value" id="portfolioValue">1,247 LUVY</div>
+        <div class="change">↑ ₺124.70 (+12.5%) this month</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">Monthly Revenue</div>
+        <div class="value">₺1,240</div>
+        <div class="sub">from 23 transactions</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">Avg. Transaction</div>
+        <div class="value">₺210.87</div>
+        <div class="sub">5.2% above average</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="quick-stats">
+    <div class="stat-card fade-in d2">
+      <div class="stat-header">
+        <div class="stat-icon purple">💎</div>
+        <span class="stat-trend up">↑ 12%</span>
+      </div>
+      <div class="stat-value" id="totalTokens">1,247</div>
+      <div class="stat-label">LUVY Tokens</div>
+    </div>
+    
+    <div class="stat-card fade-in d2" style="animation-delay:.12s">
+      <div class="stat-header">
+        <div class="stat-icon blue">📊</div>
+        <span class="stat-trend up">↑ 3</span>
+      </div>
+      <div class="stat-value">23</div>
+      <div class="stat-label">Receipts Uploaded</div>
+    </div>
+    
+    <div class="stat-card fade-in d2" style="animation-delay:.14s">
+      <div class="stat-header">
+        <div class="stat-icon green">💰</div>
+        <span class="stat-trend up">↑ 8.2%</span>
+      </div>
+      <div class="stat-value">₺4,850</div>
+      <div class="stat-label">Total Spending</div>
+    </div>
+    
+    <div class="stat-card fade-in d2" style="animation-delay:.16s">
+      <div class="stat-header">
+        <div class="stat-icon orange">⚡</div>
+        <span class="stat-trend down">↓ 2</span>
+      </div>
+      <div class="stat-value">18.2%</div>
+      <div class="stat-label">Earn Rate</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-row">
+    <div class="card fade-in d3">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Performance
+            <span class="live-indicator">
+              <span class="balance-live"></span> Live
+            </span>
+          </div>
+          <div class="card-subtitle">LUVY tokens earned over time</div>
+        </div>
+        <div class="chart-controls">
+          <button class="chart-btn">24H</button>
+          <button class="chart-btn">7D</button>
+          <button class="chart-btn active">30D</button>
+          <button class="chart-btn">90D</button>
+          <button class="chart-btn">1Y</button>
+        </div>
+      </div>
+      <canvas id="performanceChart" height="100"></canvas>
+    </div>
+
+    <div class="card fade-in d3" style="animation-delay:.18s">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Portfolio Breakdown</div>
+          <div class="card-subtitle">By merchant category</div>
+        </div>
+      </div>
+      <div id="portfolioBreakdown"></div>
+    </div>
+  </div>
+
+  <!-- Transactions -->
+  <div class="card fade-in d4">
+    <div class="table-header">
+      <div>
+        <div class="card-title">Recent Transactions</div>
+        <div class="card-subtitle">Last 30 days activity</div>
+      </div>
+      <div class="table-actions">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search transactions..." id="searchInput">
+        </div>
+        <button class="btn">📥 Export</button>
+        <button class="btn">🔄 Refresh</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Merchant</th>
+          <th>Date & Time</th>
+          <th style="text-align:right">Amount</th>
+          <th>Status</th>
+          <th style="text-align:right">Tokens Earned</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+const API='http://localhost:8080/api';
+const token=localStorage.getItem('token');
+const user=JSON.parse(localStorage.getItem('user')||'{}');
+
+if(!token)window.location.href='login.html';
+
+// User
+if(user.name){
+  document.getElementById('navAvatar').textContent=user.name[0].toUpperCase();
+}
+
+// Load data
+async function loadDashboard(){
+  try{
+    const res=await fetch(`${API}/wallet/balance`,{headers:{'Authorization':`Bearer ${token}`}});
+    if(res.ok){
+      const data=await res.json();
+      const balance=data.balance||1247;
+      updateBalance(balance);
+    }else throw new Error();
+  }catch(err){
+    updateBalance(user.luvy_balance||1247);
+  }
+  
+  loadChart();
+  loadPortfolio();
+  loadTransactions();
+  startRealTimeUpdates();
+}
+
+function updateBalance(balance){
+  document.getElementById('navBalance').textContent=balance.toLocaleString();
+  document.getElementById('totalTokens').textContent=balance.toLocaleString();
+  document.getElementById('portfolioValue').textContent=balance.toLocaleString()+' LUVY';
+}
+
+function loadChart(){
+  const ctx=document.getElementById('performanceChart').getContext('2d');
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:Array.from({length:30},(_,i)=>`Day ${i+1}`),
+      datasets:[{
+        label:'LUVY Earned',
+        data:Array.from({length:30},()=>Math.floor(Math.random()*80)+120),
+        borderColor:'#8b5cf6',
+        backgroundColor:'rgba(139,92,246,0.05)',
+        borderWidth:2,
+        fill:true,
+        tension:0.4,
+        pointRadius:0,
+        pointHoverRadius:5,
+        pointBackgroundColor:'#8b5cf6'
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#171717',
+          padding:12,
+          titleColor:'#fff',
+          bodyColor:'#fafafa',
+          cornerRadius:8,
+          displayColors:false
+        }
+      },
+      scales:{
+        y:{
+          beginAtZero:true,
+          border:{display:false},
+          grid:{color:'#f5f5f5'},
+          ticks:{color:'#a3a3a3',font:{size:11}}
+        },
+        x:{
+          border:{display:false},
+          grid:{display:false},
+          ticks:{display:false}
+        }
+      }
+    }
+  });
+}
+
+function loadPortfolio(){
+  const categories=[
+    {name:'Grocery',amount:1240,tokens:124,color:'#8b5cf6',pct:25.6},
+    {name:'Shopping',amount:1450,tokens:145,color:'#f59e0b',pct:29.9},
+    {name:'Restaurant',amount:890,tokens:89,color:'#ec4899',pct:18.4},
+    {name:'Gas',amount:560,tokens:56,color:'#3b82f6',pct:11.5},
+    {name:'Other',amount:710,tokens:71,color:'#10b981',pct:14.6}
+  ];
+  
+  const html=categories.map(c=>`
+    <div class="portfolio-item">
+      <div class="portfolio-left">
+        <div class="portfolio-color" style="background:${c.color}"></div>
+        <div>
+          <div class="portfolio-name">${c.name}</div>
+          <div class="portfolio-pct">${c.pct}%</div>
+        </div>
+      </div>
+      <div>
+        <div class="portfolio-amount">₺${c.amount.toLocaleString()}</div>
+        <div class="portfolio-tokens">${c.tokens} LUVY</div>
+      </div>
+    </div>
+  `).join('');
+  
+  document.getElementById('portfolioBreakdown').innerHTML=html;
+}
+
+function loadTransactions(){
+  const txs=[
+    {merchant:'Migros',category:'Grocery',date:'Jan 30, 14:23',amount:128.90,tokens:13,icon:'🛒',status:'completed'},
+    {merchant:'Starbucks',category:'Restaurant',date:'Jan 29, 09:15',amount:45.50,tokens:5,icon:'☕',status:'completed'},
+    {merchant:'Amazon Turkey',category:'Shopping',date:'Jan 28, 16:42',amount:299.00,tokens:30,icon:'📦',status:'completed'},
+    {merchant:'Shell',category:'Gas',date:'Jan 27, 18:30',amount:180.00,tokens:18,icon:'⛽',status:'completed'},
+    {merchant:'Dominos Pizza',category:'Restaurant',date:'Jan 26, 20:15',amount:67.80,tokens:7,icon:'🍕',status:'completed'},
+    {merchant:'CarrefourSA',category:'Grocery',date:'Jan 25, 11:20',amount:156.40,tokens:16,icon:'🛒',status:'pending'}
+  ];
+  
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML=txs.map(t=>`
+    <tr>
+      <td>
+        <div class="merchant-cell">
+          <div class="merchant-icon">${t.icon}</div>
+          <div class="merchant-info">
+            <div class="name">${t.merchant}</div>
+            <div class="category">${t.category}</div>
+          </div>
+        </div>
+      </td>
+      <td>${t.date}</td>
+      <td style="text-align:right" class="amount">₺${t.amount.toFixed(2)}</td>
+      <td><span class="status ${t.status}">${t.status==='completed'?'✓ Completed':'⏳ Pending'}</span></td>
+      <td style="text-align:right"><span class="tokens-badge">💎 ${t.tokens}</span></td>
+    </tr>
+  `).join('');
+}
+
+// Real-time simulation
+function startRealTimeUpdates(){
+  setInterval(()=>{
+    const current=parseInt(document.getElementById('totalTokens').textContent.replace(/,/g,''));
+    const change=Math.random()>0.5?1:-1;
+    const newVal=current+change;
+    if(newVal>0)updateBalance(newVal);
+  },5000);
+}
+
+function handleLogout(){
+  if(confirm('Sign out?')){
+    localStorage.clear();
+    window.location.href='login.html';
+  }
+}
+
+// Search
+document.getElementById('searchInput')?.addEventListener('input',e=>{
+  const query=e.target.value.toLowerCase();
+  document.querySelectorAll('#tbody tr').forEach(row=>{
+    const text=row.textContent.toLowerCase();
+    row.style.display=text.includes(query)?'':'none';
+  });
+});
+
+loadDashboard();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+

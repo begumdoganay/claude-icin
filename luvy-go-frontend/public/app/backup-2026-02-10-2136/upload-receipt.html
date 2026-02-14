@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Receipt | LUVY</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-primary:#0f1419;--bg-secondary:#1a1f2e;--bg-tertiary:#252b3b;
+  --text-primary:#ffffff;--text-secondary:#b4bcd0;--text-tertiary:#8b93a7;
+  --accent-purple:#8b5cf6;--accent-blue:#3b82f6;--accent-green:#10b981;--accent-red:#ef4444;
+  --border:#2d3748;--border-hover:#4a5568;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);-webkit-font-smoothing:antialiased}
+
+/* Header - Same as dashboard */
+header{background:var(--bg-secondary);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.header-inner{max-width:1920px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{width:32px;height:32px;border-radius:var(--radius);background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px}
+.logo-text{font-size:16px;font-weight:700;color:var(--text-primary)}
+.nav{display:flex;gap:4px}
+.nav-link{color:var(--text-secondary);text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;font-weight:500;transition:.15s}
+.nav-link:hover{color:var(--text-primary);background:var(--bg-tertiary)}
+.nav-link.active{color:var(--text-primary);background:var(--bg-tertiary)}
+.header-right{display:flex;align-items:center;gap:16px}
+.balance-badge{display:flex;align-items:center;gap:6px;background:var(--bg-tertiary);color:var(--text-primary);padding:8px 14px;border-radius:var(--radius);font-size:14px;font-weight:600;border:1px solid var(--border)}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+
+main{max-width:1200px;margin:0 auto;padding:32px 24px}
+
+/* Page Header */
+.page-header{margin-bottom:32px}
+.page-title{font-size:32px;font-weight:700;margin-bottom:8px}
+.page-subtitle{font-size:14px;color:var(--text-secondary)}
+
+/* Upload Steps */
+.steps{display:flex;justify-content:center;gap:24px;margin-bottom:48px}
+.step{display:flex;align-items:center;gap:12px}
+.step-number{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--text-tertiary);transition:.2s}
+.step.active .step-number{background:var(--accent-purple);border-color:var(--accent-purple);color:#fff}
+.step.completed .step-number{background:var(--accent-green);border-color:var(--accent-green);color:#fff}
+.step-label{font-size:14px;font-weight:500;color:var(--text-tertiary)}
+.step.active .step-label{color:var(--text-primary)}
+.step.completed .step-label{color:var(--accent-green)}
+
+/* Upload Section */
+.upload-section{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:48px;margin-bottom:32px}
+.upload-section.hidden{display:none}
+
+/* Dropzone */
+.dropzone{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:64px 32px;text-align:center;cursor:pointer;transition:.2s;position:relative;background:var(--bg-tertiary)}
+.dropzone:hover{border-color:var(--accent-purple);background:rgba(139,92,246,.05)}
+.dropzone.dragover{border-color:var(--accent-purple);background:rgba(139,92,246,.1);border-style:solid}
+.dropzone-icon{font-size:64px;margin-bottom:20px;opacity:.5}
+.dropzone-title{font-size:20px;font-weight:600;margin-bottom:8px}
+.dropzone-text{font-size:14px;color:var(--text-secondary);margin-bottom:16px}
+.dropzone-formats{font-size:12px;color:var(--text-tertiary)}
+.dropzone input{display:none}
+.btn-browse{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--accent-purple);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;transition:.15s;margin-top:16px}
+.btn-browse:hover{background:#7c3aed}
+
+/* Preview Section */
+.preview-section{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.preview-left{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;display:flex;align-items:center;justify-content:center}
+.preview-image{max-width:100%;max-height:500px;border-radius:var(--radius);object-fit:contain}
+.preview-right{display:flex;flex-direction:column;gap:20px}
+
+/* Form */
+.form-group{display:flex;flex-direction:column;gap:8px}
+.form-label{font-size:13px;font-weight:600;color:var(--text-primary);display:flex;align-items:center;gap:8px}
+.form-required{color:var(--accent-red)}
+.form-input,.form-select{padding:12px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-primary);font-size:14px;font-family:inherit;transition:.15s}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--accent-purple);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+.form-input::placeholder{color:var(--text-tertiary)}
+.form-hint{font-size:12px;color:var(--text-tertiary)}
+.form-input.error,.form-select.error{border-color:var(--accent-red)}
+.form-error{font-size:12px;color:var(--accent-red);display:none}
+.form-error.show{display:block}
+
+/* Merchant Suggestions */
+.merchant-suggestions{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius);max-height:200px;overflow-y:auto;position:absolute;width:100%;z-index:10;display:none;margin-top:4px}
+.merchant-suggestions.show{display:block}
+.suggestion-item{padding:12px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.suggestion-item:last-child{border-bottom:none}
+.suggestion-item:hover{background:rgba(139,92,246,.1)}
+.suggestion-icon{font-size:20px}
+.suggestion-info{flex:1}
+.suggestion-name{font-size:14px;font-weight:600}
+.suggestion-category{font-size:12px;color:var(--text-tertiary)}
+
+/* Tokens Preview */
+.tokens-preview{background:var(--bg-tertiary);border:2px solid var(--accent-purple);border-radius:var(--radius-lg);padding:24px;text-align:center}
+.tokens-label{font-size:12px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.tokens-value{font-size:48px;font-weight:800;color:var(--accent-purple);margin-bottom:4px}
+.tokens-subtitle{font-size:13px;color:var(--text-tertiary)}
+.tokens-calculation{font-size:12px;color:var(--text-secondary);margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* Actions */
+.actions{display:flex;gap:12px;justify-content:flex-end;margin-top:24px}
+.btn{padding:12px 24px;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+.btn-secondary{background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg-primary)}
+.btn-primary{background:var(--accent-purple);color:#fff}
+.btn-primary:hover{background:#7c3aed}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+/* Success Section */
+.success-section{text-align:center;padding:64px 32px}
+.success-section.hidden{display:none}
+.success-icon{font-size:80px;margin-bottom:24px;animation:celebrate 0.6s ease-out}
+@keyframes celebrate{
+  0%{transform:scale(0);opacity:0}
+  50%{transform:scale(1.2)}
+  100%{transform:scale(1);opacity:1}
+}
+.success-title{font-size:28px;font-weight:700;margin-bottom:12px}
+.success-text{font-size:14px;color:var(--text-secondary);margin-bottom:32px}
+.success-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:600px;margin:0 auto 32px}
+.success-stat{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.success-stat-value{font-size:32px;font-weight:700;margin-bottom:4px}
+.success-stat-label{font-size:13px;color:var(--text-tertiary)}
+
+@media(max-width:900px){
+  .preview-section{grid-template-columns:1fr}
+  .success-stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="dashboard.html" class="logo">
+      <div class="logo-mark">L</div>
+      <span class="logo-text">LUVY</span>
+    </a>
+    <nav class="nav">
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+      <a href="transactions.html" class="nav-link">Transactions</a>
+      <a href="upload-receipt.html" class="nav-link active">Upload</a>
+      <a href="analytics.html" class="nav-link">Analytics</a>
+      <a href="settings.html" class="nav-link">Settings</a> 
+    </nav>
+    <div class="header-right">
+      <div class="balance-badge">💎 <span id="navBalance">124.70</span> LUVY</div>
+      <div class="avatar" id="navAvatar" onclick="handleLogout()">B</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="page-header">
+    <h1 class="page-title">Upload Receipt</h1>
+    <p class="page-subtitle">Upload your receipt and earn LUVY tokens instantly</p>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step active" id="step1">
+      <div class="step-number">1</div>
+      <span class="step-label">Upload</span>
+    </div>
+    <div class="step" id="step2">
+      <div class="step-number">2</div>
+      <span class="step-label">Details</span>
+    </div>
+    <div class="step" id="step3">
+      <div class="step-number">3</div>
+      <span class="step-label">Confirm</span>
+    </div>
+  </div>
+
+  <!-- Upload Section -->
+  <div class="upload-section" id="uploadSection">
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone-icon">📸</div>
+      <div class="dropzone-title">Drag and drop your receipt here</div>
+      <div class="dropzone-text">or click to browse from your device</div>
+      <div class="dropzone-formats">Supports: JPG, PNG, PDF • Max 5MB</div>
+      <button class="btn-browse">Browse Files</button>
+      <input type="file" id="fileInput" accept="image/*,.pdf">
+    </div>
+  </div>
+
+  <!-- Preview & Form Section -->
+  <div class="upload-section hidden" id="formSection">
+    <div class="preview-section">
+      <!-- Left: Image Preview -->
+      <div class="preview-left">
+        <img id="previewImage" class="preview-image" src="" alt="Receipt preview">
+      </div>
+
+      <!-- Right: Form -->
+      <div class="preview-right">
+        <!-- Merchant -->
+        <div class="form-group" style="position:relative">
+          <label class="form-label">
+            Merchant Name
+            <span class="form-required">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-input" 
+            id="merchantInput" 
+            placeholder="e.g., REWE, Lidl, EDEKA"
+            autocomplete="off">
+          <div class="merchant-suggestions" id="merchantSuggestions"></div>
+          <div class="form-hint">Start typing to see suggestions</div>
+          <div class="form-error" id="merchantError">Please enter a merchant name</div>
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label class="form-label">
+            Category
+            <span class="form-required">*</span>
+          </label>
+          <select class="form-select" id="categorySelect">
+            <option value="">Select category</option>
+            <option value="grocery">🛒 Grocery</option>
+            <option value="restaurant">🍽️ Restaurant</option>
+            <option value="gas">⛽ Gas Station</option>
+            <option value="electronics">📱 Electronics</option>
+            <option value="healthcare">💊 Healthcare</option>
+            <option value="clothing">👔 Clothing</option>
+            <option value="entertainment">🎬 Entertainment</option>
+            <option value="other">📦 Other</option>
+          </select>
+          <div class="form-error" id="categoryError">Please select a category</div>
+        </div>
+
+        <!-- Amount -->
+        <div class="form-group">
+          <label class="form-label">
+            Total Amount (€)
+            <span class="form-required">*</span>
+          </label>
+          <input 
+            type="number" 
+            class="form-input" 
+            id="amountInput" 
+            placeholder="0.00"
+            step="0.01"
+            min="0">
+          <div class="form-hint">Enter the total amount on your receipt</div>
+          <div class="form-error" id="amountError">Please enter a valid amount</div>
+        </div>
+
+        <!-- Date -->
+        <div class="form-group">
+          <label class="form-label">
+            Receipt Date
+            <span class="form-required">*</span>
+          </label>
+          <input 
+            type="date" 
+            class="form-input" 
+            id="dateInput">
+          <div class="form-error" id="dateError">Please select a date</div>
+        </div>
+
+        <!-- Tokens Preview -->
+        <div class="tokens-preview">
+          <div class="tokens-label">You'll Earn</div>
+          <div class="tokens-value" id="tokensValue">0</div>
+          <div class="tokens-subtitle">LUVY Tokens</div>
+          <div class="tokens-calculation" id="tokensCalc">Enter amount to calculate</div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="cancelUpload()">Cancel</button>
+          <button class="btn btn-primary" id="submitBtn" onclick="submitReceipt()">Submit Receipt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Section -->
+  <div class="upload-section success-section hidden" id="successSection">
+    <div class="success-icon">🎉</div>
+    <h2 class="success-title">Receipt Uploaded Successfully!</h2>
+    <p class="success-text">Your LUVY tokens have been added to your account</p>
+
+    <div class="success-stats">
+      <div class="success-stat">
+        <div class="success-stat-value" id="earnedTokens">0</div>
+        <div class="success-stat-label">Tokens Earned</div>
+      </div>
+      <div class="success-stat">
+        <div class="success-stat-value" id="newBalance">0</div>
+        <div class="success-stat-label">New Balance</div>
+      </div>
+      <div class="success-stat">
+        <div class="success-stat-value" id="totalReceipts">24</div>
+        <div class="success-stat-label">Total Receipts</div>
+      </div>
+    </div>
+
+    <div class="actions" style="justify-content:center">
+      <button class="btn btn-secondary" onclick="location.href='dashboard.html'">View Dashboard</button>
+      <button class="btn btn-primary" onclick="uploadAnother()">Upload Another</button>
+    </div>
+  </div>
+</main>
+
+<script>
+const user=JSON.parse(localStorage.getItem('user')||'{}');
+let currentBalance=parseFloat(user.luvy_balance)||124.70;
+let selectedFile=null;
+
+if(user.name)document.getElementById('navAvatar').textContent=user.name[0].toUpperCase();
+document.getElementById('navBalance').textContent=currentBalance.toFixed(2);
+
+// German merchants database
+const germanMerchants=[
+  {name:'REWE',category:'grocery',icon:'🛒'},
+  {name:'EDEKA',category:'grocery',icon:'🛒'},
+  {name:'Lidl',category:'grocery',icon:'🛒'},
+  {name:'Aldi Süd',category:'grocery',icon:'🛒'},
+  {name:'Aldi Nord',category:'grocery',icon:'🛒'},
+  {name:'Kaufland',category:'grocery',icon:'🛒'},
+  {name:'Penny',category:'grocery',icon:'🛒'},
+  {name:'Netto',category:'grocery',icon:'🛒'},
+  {name:'MediaMarkt',category:'electronics',icon:'📱'},
+  {name:'Saturn',category:'electronics',icon:'📱'},
+  {name:'Conrad Electronic',category:'electronics',icon:'📱'},
+  {name:'dm',category:'healthcare',icon:'💊'},
+  {name:'Rossmann',category:'healthcare',icon:'💊'},
+  {name:'Müller',category:'healthcare',icon:'💊'},
+  {name:'Aral',category:'gas',icon:'⛽'},
+  {name:'Shell',category:'gas',icon:'⛽'},
+  {name:'Esso',category:'gas',icon:'⛽'},
+  {name:'Total',category:'gas',icon:'⛽'},
+  {name:'Jet',category:'gas',icon:'⛽'},
+  {name:'H&M',category:'clothing',icon:'👔'},
+  {name:'Zara',category:'clothing',icon:'👔'},
+  {name:'C&A',category:'clothing',icon:'👔'},
+  {name:'McDonald\'s',category:'restaurant',icon:'🍽️'},
+  {name:'Burger King',category:'restaurant',icon:'🍽️'},
+  {name:'Starbucks',category:'restaurant',icon:'🍽️'},
+  {name:'Nordsee',category:'restaurant',icon:'🍽️'},
+  {name:'Vapiano',category:'restaurant',icon:'🍽️'}
+];
+
+// Dropzone handlers
+const dropzone=document.getElementById('dropzone');
+const fileInput=document.getElementById('fileInput');
+
+dropzone.addEventListener('click',()=>fileInput.click());
+dropzone.addEventListener('dragover',e=>{e.preventDefault();dropzone.classList.add('dragover')});
+dropzone.addEventListener('dragleave',()=>dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop',e=>{
+  e.preventDefault();
+  dropzone.classList.remove('dragover');
+  if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change',e=>{if(e.target.files.length)handleFile(e.target.files[0])});
+
+function handleFile(file){
+  const validTypes=['image/jpeg','image/jpg','image/png','application/pdf'];
+  if(!validTypes.includes(file.type)){
+    alert('Please upload JPG, PNG, or PDF files only');
+    return;
+  }
+  if(file.size>5*1024*1024){
+    alert('File size must be less than 5MB');
+    return;
+  }
+
+  selectedFile=file;
+
+  if(file.type==='application/pdf'){
+    document.getElementById('previewImage').src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="60">📄</text><text x="50%" y="75%" text-anchor="middle" font-size="14" fill="%23888">PDF File</text></svg>';
+  }else{
+    const reader=new FileReader();
+    reader.onload=e=>document.getElementById('previewImage').src=e.target.result;
+    reader.readAsDataURL(file);
+  }
+
+  // Move to form
+  document.getElementById('uploadSection').classList.add('hidden');
+  document.getElementById('formSection').classList.remove('hidden');
+  
+  // Update steps
+  document.getElementById('step1').classList.remove('active');
+  document.getElementById('step1').classList.add('completed');
+  document.getElementById('step2').classList.add('active');
+
+  // Set today's date
+  document.getElementById('dateInput').valueAsDate=new Date();
+}
+
+// Merchant autocomplete
+const merchantInput=document.getElementById('merchantInput');
+const suggestions=document.getElementById('merchantSuggestions');
+
+merchantInput.addEventListener('input',e=>{
+  const query=e.target.value.toLowerCase();
+  
+  if(query.length<1){
+    suggestions.classList.remove('show');
+    return;
+  }
+
+  const matches=germanMerchants.filter(m=>m.name.toLowerCase().includes(query));
+  
+  if(matches.length===0){
+    suggestions.classList.remove('show');
+    return;
+  }
+
+  suggestions.innerHTML=matches.slice(0,5).map(m=>`
+    <div class="suggestion-item" onclick="selectMerchant('${m.name}','${m.category}','${m.icon}')">
+      <span class="suggestion-icon">${m.icon}</span>
+      <div class="suggestion-info">
+        <div class="suggestion-name">${m.name}</div>
+        <div class="suggestion-category">${m.category}</div>
+      </div>
+    </div>
+  `).join('');
+  
+  suggestions.classList.add('show');
+});
+
+// Hide suggestions on click outside
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.form-group')){
+    suggestions.classList.remove('show');
+  }
+});
+
+function selectMerchant(name,category,icon){
+  merchantInput.value=name;
+  document.getElementById('categorySelect').value=category;
+  suggestions.classList.remove('show');
+  merchantInput.classList.remove('error');
+  document.getElementById('merchantError').classList.remove('show');
+}
+
+// Calculate tokens
+const amountInput=document.getElementById('amountInput');
+amountInput.addEventListener('input',calculateTokens);
+
+function calculateTokens(){
+  const amount=parseFloat(amountInput.value)||0;
+  const tokens=(amount*0.1).toFixed(1);
+  
+  document.getElementById('tokensValue').textContent=tokens;
+  
+  if(amount>0){
+    document.getElementById('tokensCalc').textContent=`€${amount.toFixed(2)} × 10% = ${tokens} LUVY`;
+  }else{
+    document.getElementById('tokensCalc').textContent='Enter amount to calculate';
+  }
+}
+
+// Validation
+function validateForm(){
+  let valid=true;
+
+  // Merchant
+  const merchant=merchantInput.value.trim();
+  if(!merchant){
+    merchantInput.classList.add('error');
+    document.getElementById('merchantError').classList.add('show');
+    valid=false;
+  }else{
+    merchantInput.classList.remove('error');
+    document.getElementById('merchantError').classList.remove('show');
+  }
+
+  // Category
+  const category=document.getElementById('categorySelect').value;
+  if(!category){
+    document.getElementById('categorySelect').classList.add('error');
+    document.getElementById('categoryError').classList.add('show');
+    valid=false;
+  }else{
+    document.getElementById('categorySelect').classList.remove('error');
+    document.getElementById('categoryError').classList.remove('show');
+  }
+
+  // Amount
+  const amount=parseFloat(amountInput.value);
+  if(!amount||amount<=0){
+    amountInput.classList.add('error');
+    document.getElementById('amountError').classList.add('show');
+    valid=false;
+  }else{
+    amountInput.classList.remove('error');
+    document.getElementById('amountError').classList.remove('show');
+  }
+
+  // Date
+  const date=document.getElementById('dateInput').value;
+  if(!date){
+    document.getElementById('dateInput').classList.add('error');
+    document.getElementById('dateError').classList.add('show');
+    valid=false;
+  }else{
+    document.getElementById('dateInput').classList.remove('error');
+    document.getElementById('dateError').classList.remove('show');
+  }
+
+  return valid;
+}
+
+function submitReceipt(){
+  if(!validateForm())return;
+
+  const amount=parseFloat(amountInput.value);
+  const tokens=parseFloat((amount*0.1).toFixed(1));
+
+  // Update step
+  document.getElementById('step2').classList.remove('active');
+  document.getElementById('step2').classList.add('completed');
+  document.getElementById('step3').classList.add('completed');
+
+  // Update balance
+  currentBalance+=tokens;
+  user.luvy_balance=currentBalance;
+  localStorage.setItem('user',JSON.stringify(user));
+
+  // Show success
+  document.getElementById('formSection').classList.add('hidden');
+  document.getElementById('successSection').classList.remove('hidden');
+  
+  document.getElementById('earnedTokens').textContent=tokens.toFixed(1);
+  document.getElementById('newBalance').textContent=currentBalance.toFixed(2);
+  document.getElementById('navBalance').textContent=currentBalance.toFixed(2);
+
+  // Simulate backend call
+  console.log('Receipt submitted:',{
+    merchant:merchantInput.value,
+    category:document.getElementById('categorySelect').value,
+    amount:amount,
+    date:document.getElementById('dateInput').value,
+    tokens:tokens
+  });
+}
+
+function cancelUpload(){
+  if(confirm('Discard this upload?')){
+    resetUpload();
+  }
+}
+
+function uploadAnother(){
+  resetUpload();
+}
+
+function resetUpload(){
+  selectedFile=null;
+  merchantInput.value='';
+  document.getElementById('categorySelect').value='';
+  amountInput.value='';
+  document.getElementById('dateInput').value='';
+  fileInput.value='';
+  document.getElementById('tokensValue').textContent='0';
+  document.getElementById('tokensCalc').textContent='Enter amount to calculate';
+  
+  // Reset sections
+  document.getElementById('uploadSection').classList.remove('hidden');
+  document.getElementById('formSection').classList.add('hidden');
+  document.getElementById('successSection').classList.add('hidden');
+  
+  // Reset steps
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('step1').classList.remove('completed');
+  document.getElementById('step2').classList.remove('active','completed');
+  document.getElementById('step3').classList.remove('active','completed');
+  
+  // Clear errors
+  document.querySelectorAll('.error').forEach(el=>el.classList.remove('error'));
+  document.querySelectorAll('.form-error').forEach(el=>el.classList.remove('show'));
+}
+
+function handleLogout(){
+  if(confirm('Sign out?')){
+    localStorage.clear();
+    location.href='login.html';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+import (
+	// ... mevcut import'lar ...
+	"luvy-backend/handlers"  // ← BUNU EKLE
+)
+
+// DB initialization'dan sonra ekle:
+
+receiptHandler := handlers.NewReceiptHandler(db)
+userHandler := handlers.NewUserHandler(db)
+analyticsHandler := handlers.NewAnalyticsHandler(db)
+adminHandler := handlers.NewAdminHandler(db)
+
+// Mevcut auth route'larından sonra ekle:
+
+// Public routes
+router.GET("/api/merchants", func(c *gin.Context) {
+	// ... kod ...
+})
+
+// Protected routes
+api := router.Group("/api")
+api.Use(middleware.AuthMiddleware())
+{
+	// User routes
+	api.GET("/user/profile", userHandler.GetProfile)
+	// ... diğer route'lar ...
+}

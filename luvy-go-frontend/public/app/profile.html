@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile – LUVY GO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes progressFill { from{width:0%} to{width:var(--tw)} }
+        .fade-up { opacity:0; animation:fadeInUp .55s cubic-bezier(.4,0,.2,1) forwards }
+        .d1{animation-delay:.06s}.d2{animation-delay:.14s}.d3{animation-delay:.22s}.d4{animation-delay:.3s}.d5{animation-delay:.38s}.d6{animation-delay:.46s}
+        .progress-anim { animation:progressFill 1.4s cubic-bezier(.4,0,.2,1) forwards }
+        .gradient-text{background:linear-gradient(135deg,#a855f7,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .nav-link{position:relative;transition:color .2s}
+        .nav-link::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:linear-gradient(90deg,#a855f7,#f59e0b);border-radius:2px;transition:width .3s}
+        .nav-link.active::after,.nav-link:hover::after{width:100%}
+        .nav-link.active{color:#a855f7;font-weight:600}
+        .card-hover{transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s}
+        .card-hover:hover{transform:translateY(-4px);box-shadow:0 20px 40px -10px rgba(0,0,0,.12)}
+        .ach-unlocked{background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(245,158,11,.06));border-color:#c4b5fd!important}
+        .ach-locked{opacity:.52}
+        .toast{position:fixed;bottom:28px;right:28px;background:#1f2937;color:#fff;padding:14px 24px;border-radius:14px;font-weight:600;font-size:14px;box-shadow:0 12px 40px rgba(0,0,0,.22);transform:translateY(120px);opacity:0;transition:all .35s cubic-bezier(.4,0,.2,1);z-index:100;display:flex;align-items:center;gap:10px}
+        .toast.show{transform:translateY(0);opacity:1}
+        .input-focus:focus{border-color:#a855f7!important;box-shadow:0 0 0 3px rgba(168,85,247,.12)!important}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:3px}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span>✅</span> Profile updated successfully!</div>
+
+<!-- NAV -->
+<header class="bg-white border-b border-gray-100 sticky top-0 z-50" style="backdrop-filter:blur(12px);background:rgba(255,255,255,.92)">
+    <div class="mx-auto px-6 py-4 flex items-center justify-between" style="max-width:1280px">
+        <a href="dashboard.html" class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-purple-200" style="background:linear-gradient(135deg,#a855f7,#f59e0b)">L</div>
+            <span class="text-xl font-bold gradient-text">LUVY GO</span>
+        </a>
+        <nav class="flex items-center gap-8">
+            <a href="dashboard.html" class="nav-link text-gray-500 hover:text-purple-600">Dashboard</a>
+            <a href="upload.html" class="nav-link text-gray-500 hover:text-purple-600">Upload</a>
+            <a href="leaderboard.html" class="nav-link text-gray-500 hover:text-purple-600">Leaderboard</a>
+            <a href="profile.html" class="nav-link active">Profile</a>
+            <div class="flex items-center gap-3 ml-2 pl-4 border-l border-gray-200">
+                <div class="flex items-center gap-2 bg-purple-50 px-3 py-1.5 rounded-full border border-purple-100">
+                    <span>💎</span><span class="font-bold text-purple-600 text-sm">1,247</span>
+                </div>
+                <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold cursor-pointer hover:scale-105 transition-transform shadow-md" style="background:linear-gradient(135deg,#a855f7,#f59e0b)" id="nav-avatar" onclick="if(confirm('Logout?')){localStorage.clear();location.href='login.html'}">B</div>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<main class="mx-auto px-6 py-8" style="max-width:1100px">
+
+    <!-- Profile Hero Card -->
+    <div class="fade-up d1 bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-6 relative overflow-hidden">
+        <div class="absolute" style="top:0;right:0;width:360px;height:360px;background:radial-gradient(circle,rgba(168,85,247,.08),transparent 70%);border-radius:50%;transform:translate(25%,-35%)"></div>
+
+        <div class="relative z-10 flex items-center gap-8">
+            <!-- Avatar -->
+            <div class="relative flex-shrink-0">
+                <div class="w-28 h-28 rounded-3xl flex items-center justify-center text-white text-5xl font-bold shadow-xl" style="background:linear-gradient(135deg,#7c3aed,#a855f7 50%,#f59e0b)" id="avatar">B</div>
+                <div class="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-amber-400 border-4 border-white flex items-center justify-center text-lg shadow-md">⭐</div>
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1">
+                <div class="flex items-center gap-3 mb-1">
+                    <h1 class="text-3xl font-bold text-gray-800" id="pName">Begüm</h1>
+                    <span class="text-white text-xs font-bold px-3 py-1 rounded-full" style="background:linear-gradient(135deg,#a855f7,#f59e0b)">Level 5</span>
+                </div>
+                <p class="text-gray-500 mb-4" id="pEmail">begum@luvy.com</p>
+
+                <!-- Level Progress -->
+                <div class="max-w-md">
+                    <div class="flex justify-between text-sm text-gray-500 mb-2">
+                        <span>Level 5</span>
+                        <span class="text-purple-600 font-semibold">753 XP to Level 6</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3">
+                        <div class="h-3 rounded-full progress-anim" style="--tw:62%;background:linear-gradient(90deg,#a855f7,#f59e0b)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Balance Box -->
+            <div class="text-white text-center rounded-2xl p-5 flex-shrink-0" style="background:linear-gradient(135deg,#7c3aed,#a855f7);min-width:150px">
+                <p class="text-purple-300 text-xs uppercase tracking-wider">Balance</p>
+                <p class="text-4xl font-bold mt-1">1,247</p>
+                <p class="text-purple-300 text-sm">LUVY Tokens</p>
+                <div class="mt-2 pt-2 border-t border-purple-400">
+                    <p class="text-xs text-purple-300">🔥 3-day streak</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="fade-up d2 bg-white rounded-2xl p-5 shadow-sm border border-gray-100 card-hover text-center">
+            <div class="text-3xl mb-2">📸</div>
+            <div class="text-2xl font-bold text-gray-800">23</div>
+            <div class="text-xs text-gray-500 mt-0.5">Receipts</div>
+        </div>
+        <div class="fade-up d3 bg-white rounded-2xl p-5 shadow-sm border border-gray-100 card-hover text-center">
+            <div class="text-3xl mb-2">💰</div>
+            <div class="text-2xl font-bold text-gray-800">₺4,850</div>
+            <div class="text-xs text-gray-500 mt-0.5">Total Spent</div>
+        </div>
+        <div class="fade-up d4 bg-white rounded-2xl p-5 shadow-sm border border-gray-100 card-hover text-center">
+            <div class="text-3xl mb-2">🏆</div>
+            <div class="text-2xl font-bold text-gray-800">3 / 8</div>
+            <div class="text-xs text-gray-500 mt-0.5">Achievements</div>
+        </div>
+        <div class="fade-up d5 bg-white rounded-2xl p-5 shadow-sm border border-gray-100 card-hover text-center">
+            <div class="text-3xl mb-2">🏅</div>
+            <div class="text-2xl font-bold text-gray-800">#4</div>
+            <div class="text-xs text-gray-500 mt-0.5">Rank</div>
+        </div>
+    </div>
+
+    <!-- Two Columns: Achievements + Settings -->
+    <div class="grid lg:grid-cols-3 gap-6">
+
+        <!-- Achievements (lg:col-span-2) -->
+        <div class="lg:col-span-2 fade-up d3">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">Achievements 🏆</h3>
+                        <p class="text-sm text-gray-500">3 of 8 unlocked</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-24 bg-gray-100 rounded-full h-2"><div class="bg-purple-500 h-2 rounded-full" style="width:37.5%"></div></div>
+                        <span class="text-xs text-gray-500 font-semibold">37.5%</span>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-3">
+                    <!-- UNLOCKED -->
+                    <div class="ach-unlocked border-2 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-2xl flex-shrink-0">🎯</div>
+                        <div class="flex-1"><div class="font-bold text-gray-800 text-sm">First Receipt</div><div class="text-xs text-gray-500">Upload your first receipt</div></div>
+                        <span class="text-emerald-500 text-lg font-bold">✓</span>
+                    </div>
+                    <div class="ach-unlocked border-2 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-2xl flex-shrink-0">🌅</div>
+                        <div class="flex-1"><div class="font-bold text-gray-800 text-sm">Early Bird</div><div class="text-xs text-gray-500">Upload before 8 AM</div></div>
+                        <span class="text-emerald-500 text-lg font-bold">✓</span>
+                    </div>
+                    <div class="ach-unlocked border-2 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center text-2xl flex-shrink-0">🎉</div>
+                        <div class="flex-1"><div class="font-bold text-gray-800 text-sm">Weekend Warrior</div><div class="text-xs text-gray-500">Upload on a weekend</div></div>
+                        <span class="text-emerald-500 text-lg font-bold">✓</span>
+                    </div>
+
+                    <!-- LOCKED with progress -->
+                    <div class="ach-locked border-2 border-gray-200 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📸</div>
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-600 text-sm">Receipt Master</div>
+                            <div class="text-xs text-gray-400 mb-1.5">Upload 50 receipts</div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5"><div class="bg-purple-400 h-1.5 rounded-full progress-anim" style="--tw:46%"></div></div>
+                            <div class="text-xs text-gray-400 mt-1">23 / 50</div>
+                        </div>
+                        <span class="text-gray-300 text-lg">🔒</span>
+                    </div>
+                    <div class="ach-locked border-2 border-gray-200 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">💰</div>
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-600 text-sm">Big Spender</div>
+                            <div class="text-xs text-gray-400 mb-1.5">Spend ₺10,000 total</div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5"><div class="bg-amber-400 h-1.5 rounded-full progress-anim" style="--tw:48.5%"></div></div>
+                            <div class="text-xs text-gray-400 mt-1">₺4,850 / ₺10,000</div>
+                        </div>
+                        <span class="text-gray-300 text-lg">🔒</span>
+                    </div>
+                    <div class="ach-locked border-2 border-gray-200 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">🔥</div>
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-600 text-sm">Streak Champion</div>
+                            <div class="text-xs text-gray-400 mb-1.5">7 consecutive days</div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5"><div class="bg-red-400 h-1.5 rounded-full progress-anim" style="--tw:43%"></div></div>
+                            <div class="text-xs text-gray-400 mt-1">3 / 7 days</div>
+                        </div>
+                        <span class="text-gray-300 text-lg">🔒</span>
+                    </div>
+                    <div class="ach-locked border-2 border-gray-200 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">💎</div>
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-600 text-sm">Token Rich</div>
+                            <div class="text-xs text-gray-400 mb-1.5">Earn 5,000 LUVY</div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5"><div class="bg-sky-400 h-1.5 rounded-full progress-anim" style="--tw:25%"></div></div>
+                            <div class="text-xs text-gray-400 mt-1">1,247 / 5,000</div>
+                        </div>
+                        <span class="text-gray-300 text-lg">🔒</span>
+                    </div>
+                    <div class="ach-locked border-2 border-gray-200 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⭐</div>
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-600 text-sm">Level Master</div>
+                            <div class="text-xs text-gray-400 mb-1.5">Reach Level 10</div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5"><div class="bg-amber-400 h-1.5 rounded-full progress-anim" style="--tw:50%"></div></div>
+                            <div class="text-xs text-gray-400 mt-1">Level 5 / 10</div>
+                        </div>
+                        <span class="text-gray-300 text-lg">🔒</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="fade-up d4">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800 mb-5">Account Settings ⚙️</h3>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+                        <input type="text" id="editName" value="Begüm" class="input-focus w-full px-4 py-3 border border-gray-200 rounded-xl outline-none transition text-sm focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                        <input type="email" value="begum@luvy.com" class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-400 text-sm cursor-not-allowed" disabled>
+                        <p class="text-xs text-gray-400 mt-1">Email cannot be changed</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Member Since</label>
+                        <input type="text" value="January 20, 2026" class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-400 text-sm cursor-not-allowed" disabled>
+                    </div>
+
+                    <button id="saveBtn" class="w-full text-white font-semibold py-3 rounded-xl transition shadow-md hover:shadow-lg active:scale-95 mt-2" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">Save Changes</button>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="border-t border-gray-100 mt-6 pt-5">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Danger Zone</p>
+                    <button onclick="if(confirm('Logout?')){localStorage.clear();location.href='login.html'}" class="w-full text-red-500 hover:text-red-600 text-sm font-medium py-2.5 hover:bg-red-50 rounded-xl transition border border-transparent hover:border-red-100">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+// User data
+const u=JSON.parse(localStorage.getItem('user')||'{}');
+if(u.name){
+    document.getElementById('pName').textContent=u.name;
+    document.getElementById('avatar').textContent=u.name[0].toUpperCase();
+    document.getElementById('nav-avatar').textContent=u.name[0].toUpperCase();
+    document.getElementById('editName').value=u.name;
+}
+if(u.email){document.getElementById('pEmail').textContent=u.email}
+
+// Save
+document.getElementById('saveBtn').addEventListener('click',function(){
+    const name=document.getElementById('editName').value.trim();
+    if(!name)return;
+    const u=JSON.parse(localStorage.getItem('user')||'{}');
+    u.name=name;
+    localStorage.setItem('user',JSON.stringify(u));
+    document.getElementById('pName').textContent=name;
+    document.getElementById('avatar').textContent=name[0].toUpperCase();
+    document.getElementById('nav-avatar').textContent=name[0].toUpperCase();
+    const t=document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2800);
+});
+</script>
+</body>
+</html>
+
+
+
+
+
+

@@ -1,0 +1,177 @@
+﻿package main
+
+import (
+	"github.com/gin-contrib/cors"
+	"time"
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+
+	"luvy-go-backend/database"
+	"luvy-go-backend/src/handlers"
+	"luvy-go-backend/src/models"
+)
+
+func main() {
+	r := gin.Default()
+// TEMP analytics endpoints for dashboard
+r.GET("/api/analytics/overview", func(c *gin.Context) {
+  c.JSON(200, gin.H{
+    "balance": 0,
+    "total_spent": 0,
+    "this_month_spent": 0,
+    "currency": "EUR",
+  })
+})
+
+cfg := cors.Config{
+  AllowOrigins:     []string{"http://localhost:3000"},
+  AllowMethods:     []string{"GET","POST","PUT","DELETE","OPTIONS"},
+  AllowHeaders:     []string{"Origin","Content-Type","Authorization"},
+  AllowCredentials: true,
+  MaxAge:           12 * time.Hour,
+}
+r.Use(cors.New(cfg))
+// TEMP endpoint for frontend dashboard
+r.GET("/api/user/balance", func(c *gin.Context) {
+  c.JSON(200, gin.H{"balance": 0})
+
+
+  // TEMP analytics endpoints for dashboard
+  r.GET("/api/analytics/overview", func(c *gin.Context) {
+    c.JSON(200, gin.H{
+      "balance": 0,
+      "total_spent": 0,
+      "this_month_spent": 0,
+      "currency": "EUR",
+    })
+  })
+
+  r.GET("/api/analytics/spending", func(c *gin.Context) {
+    c.JSON(200, gin.H{
+      "labels": []string{"Jan","Feb","Mar","Apr","May","Jun"},
+      "values": []float64{0,0,0,0,0,0},
+    })
+  })
+
+  r.GET("/api/analytics/categories", func(c *gin.Context) {
+    c.JSON(200, gin.H{
+      "categories": []gin.H{
+        {"name":"grocery","amount":0},
+        {"name":"transport","amount":0},
+        {"name":"restaurant","amount":0},
+      },
+    })
+  })
+
+  r.GET("/api/analytics/merchants", func(c *gin.Context) {
+    c.JSON(200, gin.H{
+      "merchants": []gin.H{
+        {"name":"REWE","count":0},
+        {"name":"DM","count":0},
+      },
+    })
+  })
+})
+
+	// ---- DB CONNECT ----
+	db, err := database.Connect()
+	if err != nil {
+		panic(err)
+	}
+
+	// ---- AUTO MIGRATE ----
+	if err := db.AutoMigrate(
+		&models.User{},
+		&models.Receipt{},
+		&models.Transaction{},
+		&models.Merchant{},
+	); err != nil {
+		panic(err)
+	}
+
+	// ---- SIMPLE USER MIDDLEWARE ----
+	r.Use(func(c *gin.Context) {
+		userID := uint(1)
+
+		if v := c.GetHeader("X-User-ID"); v != "" {
+			if n, e := strconv.ParseUint(v, 10, 64); e == nil && n > 0 {
+				userID = uint(n)
+			}
+		}
+
+		c.Set("userID", userID)
+		c.Next()
+	})
+
+	// ---- HEALTH ----
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	// ---- HANDLERS ----
+	receiptH := handlers.NewReceiptHandler(db)
+	userHandler := handlers.NewUserHandler(db)
+	analyticsHandler := handlers.NewAnalyticsHandler(db)
+	adminHandler := handlers.NewAdminHandler(db)
+
+	api := r.Group("/api")
+	{
+		receipts := api.Group("/receipts")
+		{
+			receipts.POST("", receiptH.SubmitReceipt)
+			receipts.GET("", receiptH.ListReceipts)
+			receipts.GET("/stats", receiptH.GetStats)
+			receipts.GET("/:id", receiptH.GetReceipt)
+			receipts.DELETE("/:id", receiptH.DeleteReceipt)
+		}
+	}
+
+	r.Run(":8080")
+
+// Public merchants endpoint
+router.GET("/api/merchants", func(c *gin.Context) {
+    var merchants []models.Merchant
+    if err := db.Where("active = ?", true).Find(&merchants).Error; err != nil {
+        c.JSON(500, gin.H{"error": "Failed to fetch merchants"})
+        return
+    }
+    c.JSON(200, gin.H{"merchants": merchants})
+})
+
+// Protected routes
+api := router.Group("/api")
+api.Use(middleware.AuthMiddleware())
+{
+    // User routes
+    api.GET("/user/profile", userHandler.GetProfile)
+    api.PUT("/user/profile", userHandler.UpdateProfile)
+    api.GET("/user/balance", userHandler.GetBalance)
+
+    // Receipt routes
+    api.POST("/receipts/submit", receiptHandler.SubmitReceipt)
+    api.GET("/receipts", receiptHandler.ListReceipts)
+    api.GET("/receipts/stats", receiptHandler.GetStats)
+
+    // Analytics routes
+    api.GET("/analytics/overview", analyticsHandler.GetOverview)
+    api.GET("/analytics/spending", analyticsHandler.GetSpending)
+    api.GET("/analytics/categories", analyticsHandler.GetCategories)
+    api.GET("/analytics/merchants", analyticsHandler.GetTopMerchants)
+
+    // Admin routes
+    admin := api.Group("/admin")
+    {
+        admin.GET("/dashboard", adminHandler.GetDashboard)
+        admin.GET("/users", adminHandler.GetUsers)
+    }
+}
+}
+
+
+
+
+
+
+

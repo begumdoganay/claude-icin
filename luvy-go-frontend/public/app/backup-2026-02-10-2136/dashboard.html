@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | LUVY</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-primary:#0f1419;--bg-secondary:#1a1f2e;--bg-tertiary:#252b3b;
+  --text-primary:#ffffff;--text-secondary:#b4bcd0;--text-tertiary:#8b93a7;
+  --accent-purple:#8b5cf6;--accent-blue:#3b82f6;--accent-green:#10b981;--accent-red:#ef4444;
+  --border:#2d3748;--border-hover:#4a5568;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* Header */
+header{background:var(--bg-secondary);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+.header-inner{max-width:1920px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{width:32px;height:32px;border-radius:var(--radius);background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px}
+.logo-text{font-size:16px;font-weight:700;color:var(--text-primary)}
+.nav{display:flex;gap:4px}
+.nav-link{color:var(--text-secondary);text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;font-weight:500;transition:.15s}
+.nav-link:hover{color:var(--text-primary);background:var(--bg-tertiary)}
+.nav-link.active{color:var(--text-primary);background:var(--bg-tertiary)}
+.header-right{display:flex;align-items:center;gap:16px}
+
+/* Live Price Ticker */
+.ticker{display:flex;align-items:center;gap:16px;padding:8px 16px;background:var(--bg-tertiary);border-radius:var(--radius);border:1px solid var(--border)}
+.ticker-label{font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em}
+.ticker-price{font-size:18px;font-weight:700;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.ticker-change{font-size:13px;font-weight:600;padding:4px 8px;border-radius:4px}
+.ticker-change.up{color:var(--accent-green);background:rgba(16,185,129,.1)}
+.ticker-change.down{color:var(--accent-red);background:rgba(239,68,68,.1)}
+
+.balance-badge{display:flex;align-items:center;gap:6px;background:var(--bg-tertiary);color:var(--text-primary);padding:8px 14px;border-radius:var(--radius);font-size:14px;font-weight:600;border:1px solid var(--border)}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+
+main{max-width:1920px;margin:0 auto;padding:20px 24px}
+
+/* Layout Grid */
+.dashboard-grid{display:grid;grid-template-columns:1fr 320px;gap:20px;height:calc(100vh - 100px)}
+.main-panel{display:flex;flex-direction:column;gap:20px}
+.side-panel{display:flex;flex-direction:column;gap:20px}
+
+/* Stats Grid */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.stat-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;transition:.15s}
+.stat-card:hover{border-color:var(--border-hover)}
+.stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.stat-icon{font-size:24px}
+.stat-change{font-size:12px;font-weight:600}
+.stat-change.up{color:var(--accent-green)}
+.stat-change.down{color:var(--accent-red)}
+.stat-value{font-size:28px;font-weight:700;margin-bottom:4px;font-variant-numeric:tabular-nums}
+.stat-label{font-size:13px;color:var(--text-secondary)}
+
+/* Chart Card */
+.chart-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;flex:1;display:flex;flex-direction:column}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.chart-title{font-size:16px;font-weight:600;color:var(--text-primary)}
+.chart-controls{display:flex;gap:6px}
+.chart-btn{padding:6px 12px;border:1px solid var(--border);background:transparent;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;transition:.15s;color:var(--text-secondary)}
+.chart-btn:hover{background:var(--bg-tertiary);color:var(--text-primary)}
+.chart-btn.active{background:var(--accent-purple);color:#fff;border-color:var(--accent-purple)}
+.chart-container{flex:1;position:relative;min-height:400px}
+.chart-container canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+
+/* Market Depth */
+.depth-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.depth-title{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text-primary)}
+.depth-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.depth-side{display:flex;flex-direction:column;gap:8px}
+.depth-header{font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.depth-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;padding:6px 8px;border-radius:4px;transition:.15s;font-variant-numeric:tabular-nums}
+.depth-row:hover{background:var(--bg-tertiary)}
+.depth-row.buy{color:var(--accent-green)}
+.depth-row.sell{color:var(--accent-red)}
+.depth-price{font-weight:600}
+.depth-amount{color:var(--text-secondary)}
+
+/* Activity Feed */
+.activity-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;max-height:400px;overflow-y:auto}
+.activity-title{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text-primary)}
+.activity-list{display:flex;flex-direction:column;gap:12px}
+.activity-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:var(--radius);transition:.15s;animation:slideIn .3s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+.activity-item:hover{background:var(--bg-tertiary)}
+.activity-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.activity-icon.success{background:rgba(16,185,129,.15);color:var(--accent-green)}
+.activity-icon.info{background:rgba(59,130,246,.15);color:var(--accent-blue)}
+.activity-content{flex:1;min-width:0}
+.activity-text{font-size:13px;color:var(--text-primary);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.activity-time{font-size:11px;color:var(--text-tertiary)}
+.activity-amount{font-size:13px;font-weight:700;color:var(--accent-green);white-space:nowrap}
+
+/* Leaderboard */
+.leaderboard-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.leaderboard-title{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text-primary)}
+.leaderboard-list{display:flex;flex-direction:column;gap:10px}
+.leaderboard-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--radius);transition:.15s;border:1px solid transparent}
+.leaderboard-item:hover{background:var(--bg-tertiary);border-color:var(--border)}
+.leaderboard-item.me{background:rgba(139,92,246,.1);border-color:var(--accent-purple)}
+.leaderboard-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;background:var(--bg-tertiary);color:var(--text-secondary)}
+.leaderboard-rank.gold{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000}
+.leaderboard-rank.silver{background:linear-gradient(135deg,#e5e7eb,#9ca3af);color:#000}
+.leaderboard-rank.bronze{background:linear-gradient(135deg,#fb923c,#f97316);color:#fff}
+.leaderboard-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px}
+.leaderboard-info{flex:1;min-width:0}
+.leaderboard-name{font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leaderboard-meta{font-size:11px;color:var(--text-tertiary)}
+.leaderboard-value{font-size:14px;font-weight:700;color:var(--accent-purple);white-space:nowrap}
+
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--bg-primary)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-hover)}
+
+@media(max-width:1400px){.dashboard-grid{grid-template-columns:1fr;height:auto}.side-panel{display:grid;grid-template-columns:1fr 1fr;gap:20px}}
+@media(max-width:768px){.stats-grid{grid-template-columns:1fr}.side-panel{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="dashboard.html" class="logo">
+      <div class="logo-mark">L</div>
+      <span class="logo-text">LUVY</span>
+    </a>
+    <nav class="nav">
+      <a href="dashboard.html" class="nav-link active">Dashboard</a>
+      <a href="transactions.html" class="nav-link">Transactions</a>
+      <a href="upload-receipt.html" class="nav-link">Upload</a>
+      <a href="analytics.html" class="nav-link">Analytics</a>
+    </nav>
+    <div class="header-right">
+      <div class="ticker">
+        <span class="ticker-label">LUVY/EUR</span>
+        <span class="ticker-price" id="livePrice">€1.0000</span>
+        <span class="ticker-change up" id="liveChange">+0.00%</span>
+      </div>
+      <div class="balance-badge">💎 <span id="navBalance">124.70</span> LUVY</div>
+      <div class="avatar" id="navAvatar" onclick="handleLogout()">B</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-icon">💎</span>
+        <span class="stat-change up" id="portfolioChange">+0.00%</span>
+      </div>
+      <div class="stat-value" id="portfolioValue">€124.70</div>
+      <div class="stat-label">Portfolio Value</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-icon">📈</span>
+        <span class="stat-change up">+12%</span>
+      </div>
+      <div class="stat-value">23</div>
+      <div class="stat-label">Total Receipts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-icon">⚡</span>
+        <span class="stat-change up">+8.2%</span>
+      </div>
+      <div class="stat-value">€84.20</div>
+      <div class="stat-label">This Month</div>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="dashboard-grid">
+    <!-- Main Panel -->
+    <div class="main-panel">
+      <!-- Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">LUVY/EUR Trading Chart</span>
+          <div class="chart-controls">
+            <button class="chart-btn" data-tf="1m">1M</button>
+            <button class="chart-btn" data-tf="5m">5M</button>
+            <button class="chart-btn active" data-tf="1h">1H</button>
+            <button class="chart-btn" data-tf="1d">1D</button>
+            <button class="chart-btn" data-tf="1w">1W</button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="tradingChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel">
+      <!-- Market Depth -->
+      <div class="depth-card">
+        <div class="depth-title">Market Depth</div>
+        <div class="depth-grid">
+          <div class="depth-side">
+            <div class="depth-header">
+              <span>Buy (€)</span>
+              <span>Amount</span>
+            </div>
+            <div id="buyOrders"></div>
+          </div>
+          <div class="depth-side">
+            <div class="depth-header">
+              <span>Sell (€)</span>
+              <span>Amount</span>
+            </div>
+            <div id="sellOrders"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Feed -->
+      <div class="activity-card">
+        <div class="activity-title">Live Activity</div>
+        <div class="activity-list" id="activityFeed"></div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="leaderboard-card">
+        <div class="leaderboard-title">Top Earners</div>
+        <div class="leaderboard-list" id="leaderboardList"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const user=JSON.parse(localStorage.getItem('user')||'{}');
+let baseBalance=parseFloat(user.luvy_balance)||124.70;
+let currentPrice=1.0000;
+let chart=null;
+
+const germanMerchants=['REWE','EDEKA','Lidl','Aldi Süd','Kaufland','MediaMarkt','dm','Aral'];
+
+if(user.name)document.getElementById('navAvatar').textContent=user.name[0].toUpperCase();
+
+function initChart(){
+  const ctx=document.getElementById('tradingChart').getContext('2d');
+  
+  const labels=[];
+  const data=[];
+  for(let i=60;i>=0;i--){
+    labels.push('');
+    data.push(1.0000+(Math.random()-.5)*.02);
+  }
+  
+  chart=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[{
+        label:'LUVY/EUR',
+        data:data,
+        borderColor:'#8b5cf6',
+        backgroundColor:'rgba(139,92,246,0.1)',
+        borderWidth:2,
+        tension:0.4,
+        fill:true,
+        pointRadius:0,
+        pointHoverRadius:4
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1a1f2e',
+          titleColor:'#fff',
+          bodyColor:'#b4bcd0',
+          borderColor:'#2d3748',
+          borderWidth:1,
+          padding:12,
+          displayColors:false,
+          callbacks:{
+            title:()=>'LUVY/EUR',
+            label:context=>'€'+context.parsed.y.toFixed(4)
+          }
+        }
+      },
+      scales:{
+        y:{
+          position:'right',
+          grid:{color:'#2d3748',drawBorder:false},
+          ticks:{color:'#8b93a7',callback:v=>'€'+v.toFixed(4)}
+        },
+        x:{
+          grid:{display:false},
+          ticks:{display:false}
+        }
+      }
+    }
+  });
+  
+  return chart;
+}
+
+function updateChart(price){
+  if(!chart)return;
+  chart.data.labels.push('');
+  chart.data.labels.shift();
+  chart.data.datasets[0].data.push(price);
+  chart.data.datasets[0].data.shift();
+  chart.update('none');
+}
+
+function updatePrice(){
+  const change=(Math.random()-.5)*.005;
+  currentPrice=Math.max(.95,Math.min(1.05,currentPrice+change));
+  
+  document.getElementById('livePrice').textContent='€'+currentPrice.toFixed(4);
+  
+  const pctChange=((currentPrice-1)/.01)*100;
+  const changeEl=document.getElementById('liveChange');
+  changeEl.textContent=(pctChange>=0?'+':'')+pctChange.toFixed(2)+'%';
+  changeEl.className='ticker-change '+(pctChange>=0?'up':'down');
+  
+  const portfolioValue=baseBalance*currentPrice;
+  document.getElementById('portfolioValue').textContent='€'+portfolioValue.toFixed(2);
+  document.getElementById('portfolioChange').textContent=(pctChange>=0?'+':'')+pctChange.toFixed(2)+'%';
+  document.getElementById('portfolioChange').className='stat-change '+(pctChange>=0?'up':'down');
+  
+  updateChart(currentPrice);
+  updateMarketDepth();
+}
+
+function updateMarketDepth(){
+  const buyOrders=document.getElementById('buyOrders');
+  const sellOrders=document.getElementById('sellOrders');
+  
+  buyOrders.innerHTML='';
+  sellOrders.innerHTML='';
+  
+  for(let i=0;i<5;i++){
+    const buyPrice=(currentPrice-(.0001*(i+1))).toFixed(4);
+    const sellPrice=(currentPrice+(.0001*(i+1))).toFixed(4);
+    const buyAmt=Math.floor(Math.random()*500+200);
+    const sellAmt=Math.floor(Math.random()*500+200);
+    buyOrders.innerHTML+=`<div class="depth-row buy"><span class="depth-price">€${buyPrice}</span><span class="depth-amount">${buyAmt}</span></div>`;
+    sellOrders.innerHTML+=`<div class="depth-row sell"><span class="depth-price">€${sellPrice}</span><span class="depth-amount">${sellAmt}</span></div>`;
+  }
+}
+
+const activities=[];
+function addActivity(){
+  const merchant=germanMerchants[Math.floor(Math.random()*germanMerchants.length)];
+  const amount=(Math.random()*3+.5).toFixed(1);
+  const isReceipt=Math.random()>.3;
+  
+  activities.unshift({
+    icon:isReceipt?'✓':'📊',
+    type:isReceipt?'success':'info',
+    text:isReceipt?`+${amount} LUVY | ${merchant} receipt`:`Market ${Math.random()>.5?'up':'down'} ${(Math.random()*2).toFixed(1)}%`,
+    time:'Just now',
+    amount:isReceipt?`+${amount}`:'',
+    timestamp:Date.now()
+  });
+  
+  if(activities.length>10)activities.pop();
+  
+  const feed=document.getElementById('activityFeed');
+  feed.innerHTML=activities.map(a=>`
+    <div class="activity-item">
+      <div class="activity-icon ${a.type}">${a.icon}</div>
+      <div class="activity-content">
+        <div class="activity-text">${a.text}</div>
+        <div class="activity-time">${a.time}</div>
+      </div>
+      ${a.amount?`<div class="activity-amount">${a.amount}</div>`:''}
+    </div>
+  `).join('');
+}
+
+const leaderboard=[
+  {rank:1,name:'Hans Schmidt',tokens:284.7,level:28},
+  {rank:2,name:'Anna Müller',tokens:215.6,level:21},
+  {rank:3,name:user.name||'You',tokens:baseBalance,level:12,isMe:true},
+  {rank:4,name:'Lars Weber',tokens:184.2,level:18},
+  {rank:5,name:'Julia Fischer',tokens:162.3,level:16}
+];
+
+function renderLeaderboard(){
+  const list=document.getElementById('leaderboardList');
+  list.innerHTML=leaderboard.map(item=>{
+    let rankClass='';
+    if(item.rank===1)rankClass='gold';
+    else if(item.rank===2)rankClass='silver';
+    else if(item.rank===3&&!item.isMe)rankClass='bronze';
+    
+    return`
+      <div class="leaderboard-item${item.isMe?' me':''}">
+        <div class="leaderboard-rank ${rankClass}">${item.rank}</div>
+        <div class="leaderboard-avatar">${item.name[0]}</div>
+        <div class="leaderboard-info">
+          <div class="leaderboard-name">${item.name}${item.isMe?' (You)':''}</div>
+          <div class="leaderboard-meta">Level ${item.level}</div>
+        </div>
+        <div class="leaderboard-value">€${item.tokens.toFixed(2)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+initChart();
+renderLeaderboard();
+updateMarketDepth();
+
+for(let i=0;i<5;i++)addActivity();
+
+setInterval(updatePrice,2000);
+setInterval(addActivity,5000);
+
+setInterval(()=>{
+  activities.forEach((a,i)=>{
+    const seconds=Math.floor((Date.now()-a.timestamp)/1000);
+    if(seconds<60)a.time='Just now';
+    else if(seconds<3600)a.time=Math.floor(seconds/60)+'m ago';
+    else a.time=Math.floor(seconds/3600)+'h ago';
+  });
+  addActivity();
+},10000);
+
+function handleLogout(){
+  if(confirm('Sign out?')){
+    localStorage.clear();
+    location.href='login.html';
+  }
+}
+
+document.querySelectorAll('.chart-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

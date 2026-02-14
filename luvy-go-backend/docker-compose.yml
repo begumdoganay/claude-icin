@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: luvy-postgres
+    environment:
+      POSTGRES_DB: luvy_go_db
+      POSTGRES_USER: luvy_admin
+      POSTGRES_PASSWORD: LuvyPass123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U luvy_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  redis:
+    image: redis:7-alpine
+    container_name: luvy-redis
+    command: redis-server --requirepass RedisPass123
+    ports:
+      - "6379:6379"
+  backend:
+    build: .
+    container_name: luvy-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: postgres
+      DB_NAME: luvy_go_db
+      DB_USER: luvy_admin
+      DB_PASSWORD: LuvyPass123
+      REDIS_HOST: redis
+      JWT_SECRET: luvy_super_secret_key_2025
+    ports:
+      - "3001:3000"
+volumes:
+  postgres_data:

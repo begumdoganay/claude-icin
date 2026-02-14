@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in to LUVY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gray-50:#fafafa;--gray-100:#f5f5f5;--gray-200:#e5e5e5;--gray-300:#d4d4d4;
+  --gray-400:#a3a3a3;--gray-500:#737373;--gray-600:#525252;--gray-700:#404040;
+  --gray-800:#262626;--gray-900:#171717;--gray-950:#0a0a0a;
+  --purple-500:#8b5cf6;--purple-600:#7c3aed;--purple-700:#6d28d9;
+  --orange-500:#f59e0b;--orange-600:#d97706;
+  --green-500:#10b981;--red-500:#ef4444;
+  --radius-sm:6px;--radius:8px;--radius-lg:12px;--radius-xl:16px;
+}
+
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#fff;color:var(--gray-900);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+
+.container{width:100%;max-width:400px;padding:0 24px}
+
+/* Logo */
+.logo-wrap{text-align:center;margin-bottom:32px}
+.logo{
+  width:48px;height:48px;border-radius:var(--radius-lg);
+  background:linear-gradient(135deg,var(--purple-600),var(--purple-500));
+  display:inline-flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:24px;color:#fff;margin-bottom:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+}
+.logo-text{font-size:20px;font-weight:700;color:var(--gray-900);letter-spacing:-.02em}
+
+/* Card */
+.card{
+  background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius-xl);
+  padding:32px;box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+.card-title{font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;letter-spacing:-.02em}
+.card-subtitle{font-size:14px;color:var(--gray-500);margin-bottom:24px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:var(--radius);margin-bottom:24px}
+.tab{flex:1;padding:8px;border-radius:var(--radius-sm);border:none;background:none;color:var(--gray-600);font-size:14px;font-weight:500;cursor:pointer;transition:.15s;font-family:inherit}
+.tab:hover{color:var(--gray-900)}
+.tab.active{background:#fff;color:var(--gray-900);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+
+/* Form */
+.form{display:none}
+.form.active{display:block}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:6px}
+.form-input{
+  width:100%;background:#fff;border:1px solid var(--gray-300);border-radius:var(--radius);
+  padding:10px 12px;font-size:14px;color:var(--gray-900);font-family:inherit;
+  transition:.15s;outline:none;
+}
+.form-input::placeholder{color:var(--gray-400)}
+.form-input:hover{border-color:var(--gray-400)}
+.form-input:focus{border-color:var(--purple-500);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+
+/* Button */
+.btn{
+  width:100%;background:var(--gray-900);border:none;color:#fff;
+  font-size:14px;font-weight:500;padding:11px;border-radius:var(--radius);
+  cursor:pointer;font-family:inherit;transition:.15s;margin-top:8px;
+}
+.btn:hover{background:var(--gray-800)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.btn-secondary{
+  background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);
+}
+.btn-secondary:hover{background:var(--gray-200);border-color:var(--gray-400)}
+
+/* Alert */
+.alert{
+  padding:12px 16px;border-radius:var(--radius);font-size:13px;margin-bottom:16px;
+  display:none;border:1px solid;
+}
+.alert.show{display:block}
+.alert-error{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+.alert-success{background:#f0fdf4;color:#166534;border-color:#bbf7d0}
+
+/* Loading */
+.loading{display:none;text-align:center;padding:16px}
+.loading.show{display:block}
+.spinner{
+  width:20px;height:20px;border:2px solid var(--gray-200);
+  border-top-color:var(--gray-900);border-radius:50%;
+  animation:spin .8s linear infinite;display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Divider */
+.divider{
+  display:flex;align-items:center;gap:12px;margin:20px 0;
+  color:var(--gray-400);font-size:12px;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--gray-200)}
+
+/* Demo hint */
+.demo-hint{
+  background:var(--gray-50);border:1px solid var(--gray-200);
+  border-radius:var(--radius);padding:12px 16px;margin-top:16px;
+}
+.demo-hint-title{font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:4px}
+.demo-hint-text{font-size:11px;color:var(--gray-500);line-height:1.5}
+
+/* Footer */
+.footer{text-align:center;margin-top:24px;font-size:12px;color:var(--gray-500)}
+.footer a{color:var(--gray-700);text-decoration:none;font-weight:500}
+.footer a:hover{color:var(--gray-900)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.container{animation:fadeIn .4s cubic-bezier(.4,0,.2,1)}
+
+@media(max-width:480px){.container{padding:0 16px}.card{padding:24px}}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo-wrap">
+    <div class="logo">L</div>
+    <div class="logo-text">LUVY</div>
+  </div>
+
+  <div class="card">
+    <h1 class="card-title">Welcome back</h1>
+    <p class="card-subtitle">Sign in to your account to continue</p>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Sign in</button>
+      <button class="tab" onclick="switchTab('register')">Sign up</button>
+    </div>
+
+    <div class="alert alert-error" id="error"></div>
+    <div class="alert alert-success" id="success"></div>
+    <div class="loading" id="loading"><div class="spinner"></div></div>
+
+    <!-- LOGIN -->
+    <form class="form active" id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email address</label>
+        <input type="email" class="form-input" placeholder="you@example.com" required autofocus>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" placeholder="Enter password" required>
+      </div>
+      <button type="submit" class="btn">Sign in</button>
+    </form>
+
+    <!-- REGISTER -->
+    <form class="form" id="registerForm" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label class="form-label">Full name</label>
+        <input type="text" class="form-input" placeholder="Begüm" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email address</label>
+        <input type="email" class="form-input" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" placeholder="Min. 8 characters" required minlength="8">
+      </div>
+      <button type="submit" class="btn">Create account</button>
+    </form>
+
+    <div class="divider">or</div>
+    
+    <button class="btn btn-secondary" onclick="demoLogin()">Continue with demo</button>
+
+    <div class="demo-hint">
+      <div class="demo-hint-title">Demo Mode</div>
+      <div class="demo-hint-text">Click "Continue with demo" to explore the platform without creating an account.</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>© 2026 LUVY. All rights reserved.</span>
+  </div>
+</div>
+
+<script>
+const API='http://localhost:8080/api';
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.form').forEach(f=>f.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tab+'Form').classList.add('active');
+  hideMessages();
+}
+
+function showError(msg){
+  const el=document.getElementById('error');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),5000);
+}
+
+function showSuccess(msg){
+  const el=document.getElementById('success');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+function hideMessages(){
+  document.getElementById('error').classList.remove('show');
+  document.getElementById('success').classList.remove('show');
+}
+
+function showLoading(show){
+  document.getElementById('loading').classList.toggle('show',show);
+  document.querySelectorAll('.btn').forEach(btn=>btn.disabled=show);
+}
+
+async function handleLogin(e){
+  e.preventDefault();
+  hideMessages();showLoading(true);
+  const form=e.target;
+  const email=form.querySelector('input[type="email"]').value;
+  const password=form.querySelector('input[type="password"]').value;
+
+  try{
+    const res=await fetch(`${API}/auth/login`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})
+    });
+    const data=await res.json();
+
+    if(res.ok){
+      localStorage.setItem('token',data.token);
+      localStorage.setItem('user',JSON.stringify(data.user));
+      showSuccess('Signed in successfully');
+      setTimeout(()=>window.location.href='dashboard.html',800);
+    }else{
+      showError(data.message||'Invalid credentials');
+    }
+  }catch(err){
+    showError('Unable to connect. Using demo mode...');
+    setTimeout(demoLogin,1500);
+  }finally{
+    showLoading(false);
+  }
+}
+
+async function handleRegister(e){
+  e.preventDefault();
+  hideMessages();showLoading(true);
+  const form=e.target;
+  const name=form.querySelector('input[type="text"]').value;
+  const email=form.querySelector('input[type="email"]').value;
+  const password=form.querySelector('input[type="password"]').value;
+
+  try{
+    const res=await fetch(`${API}/auth/register`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,email,password})
+    });
+    const data=await res.json();
+
+    if(res.ok){
+      showSuccess('Account created! Please sign in.');
+      setTimeout(()=>{
+        document.querySelector('.tab:first-child').click();
+        document.querySelector('#loginForm input[type="email"]').value=email;
+      },1500);
+    }else{
+      showError(data.message||'Registration failed');
+    }
+  }catch(err){
+    showError('Unable to connect to server');
+  }finally{
+    showLoading(false);
+  }
+}
+
+function demoLogin(){
+  const user={id:1,name:'Begüm',email:'demo@luvy.com',luvy_balance:1247,level:5};
+  localStorage.setItem('token','demo-'+Date.now());
+  localStorage.setItem('user',JSON.stringify(user));
+  window.location.href='dashboard.html';
+}
+
+if(localStorage.getItem('token'))window.location.href='dashboard.html';
+</script>
+</body>
+</html>
+
+
+
+
+
+
+

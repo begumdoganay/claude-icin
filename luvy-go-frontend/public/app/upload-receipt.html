@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload Receipt</title>
+  <style>
+    body { font-family: system-ui, Arial; max-width: 720px; margin: 40px auto; padding: 0 16px; }
+    label { display:block; margin: 14px 0 6px; font-weight: 600; }
+    input, select, button { width: 100%; padding: 10px; font-size: 16px; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .msg { margin-top: 14px; padding: 10px; border-radius: 8px; }
+    .msg.ok { background: #e7f8ee; }
+    .msg.err { background: #fde8e8; }
+    .muted { color:#666; font-size: 13px; margin-top:6px; }
+    button[disabled] { opacity: 0.6; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <h1>Fiş Yükle (Backend’e Kayıt)</h1>
+
+  <form id="receiptForm">
+    <label>Merchant</label>
+    <input id="merchant" placeholder="Örn: Rossmann" required />
+
+    <label>Category</label>
+    <input id="category" placeholder="Örn: Shopping" required />
+
+    <div class="row">
+      <div>
+        <label>Amount (€)</label>
+        <input id="amount" type="number" step="0.01" min="0.01" placeholder="12.50" required />
+      </div>
+      <div>
+        <label>Receipt Date</label>
+        <input id="receiptDate" type="datetime-local" required />
+        <div class="muted">Boş bırakırsan hata verir. (Backend zorunlu)</div>
+      </div>
+    </div>
+
+    <label>Image URL (şimdilik opsiyonel)</label>
+    <input id="imageUrl" placeholder="Örn: https://..." />
+
+    <div class="muted">
+      Şimdilik gerçek fotoğraf upload yok. Sonraki adımda multipart upload ekleyeceğiz.
+    </div>
+
+    <button id="submitBtn" type="submit">Gönder</button>
+
+    <div id="message"></div>
+  </form>
+
+  <script>
+    const BASE_URL = "http://localhost:8080";
+    const USER_ID = "1";
+
+    const form = document.getElementById("receiptForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const messageEl = document.getElementById("message");
+
+    function setMessage(type, text) {
+      messageEl.innerHTML = text ? `<div class="msg ${type}">${text}</div>` : "";
+    }
+
+    function setLoading(isLoading) {
+      submitBtn.disabled = isLoading;
+      submitBtn.textContent = isLoading ? "Gönderiliyor..." : "Gönder";
+    }
+
+    function toISO(dateTimeLocalValue) {
+      const d = new Date(dateTimeLocalValue);
+      if (Number.isNaN(d.getTime())) return null;
+      return d.toISOString();
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setMessage("", "");
+      setLoading(true);
+
+      try {
+        const merchant = document.getElementById("merchant").value.trim();
+        const category = document.getElementById("category").value.trim();
+        const amountStr = document.getElementById("amount").value;
+        const receiptDateLocal = document.getElementById("receiptDate").value;
+        const imageUrl = document.getElementById("imageUrl").value.trim();
+
+        const amount = Number(amountStr);
+        const receipt_date = toISO(receiptDateLocal);
+
+        if (!merchant || !category) throw new Error("Merchant ve Category zorunlu.");
+        if (!amount || amount <= 0) throw new Error("Amount 0'dan büyük olmalı.");
+        if (!receipt_date) throw new Error("Receipt Date geçersiz.");
+
+        const payload = {
+          merchant,
+          category,
+          amount,
+          receipt_date,
+          image_url: imageUrl || ""
+        };
+
+        const res = await fetch(`${BASE_URL}/api/receipts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-User-ID": USER_ID
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          const errMsg = data?.error || `HTTP ${res.status} - Kayıt başarısız`;
+          throw new Error(errMsg);
+        }
+
+        setMessage("ok", `✅ Kayıt başarılı! Tokens earned: <b>${data.tokens_earned ?? "?"}</b>`);
+        form.reset();
+
+      } catch (err) {
+        setMessage("err", `❌ ${err.message || "Bilinmeyen hata"}`);
+      } finally {
+        setLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>
